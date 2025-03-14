@@ -1,15 +1,16 @@
 # Motion Recorder
-A Unity tool to record the motion of objects as an animation.
+Lets you record complex motions (such as a physics simulation) to an animation clip in the Unity editor.
 
-This tool was built to record physics simulations to an animation file to be played back at runtime. However, it will target any GameObjects assigned to so could be used for other applications.
-
-Note that Motion Recorder is an editor tool and is not intended to be used at Runtime!
+![](https://github.com/JARcraft2/motion-recorder/blob/main/preview.gif)
 
 ## How to use
 - Drag the project folder into your Unity assets.
-- I recommend you create a separate scene containing only the objects necessary to the recording, since the tool will simulate every physics object in the scene once you hit record.
-- Create a GameObject containing any object you want to record. Since the recording will be saved as an Animation Clip, objects will only work properly if they are a child of the Motion Recorder. This will be the object you can add an Animation Controller to later.
-- Assign the objects you want to be recorded to the Targets property on the Motion Recorder.
-- Then you can hit record. Press record again to end the recording & hit save to create an Animation Clip in your assets folder.
+- Open up the demo scene.
+- Create objects you want to record as children of the motion recorder. Since the output will be an Animation Clip asset, Motion Recorder will only capture the motion of children.
+- Assign the objects to the Targets field on the Motion Recorder.
+- When you hit record, Motion Recorder will simulate the scene physics in the editor. Press record again to finish and the targets will be reset to before the simulation.
+- Then you can save out your recording.
 
-Requires the Editor Coroutines package!
+If you are intending to use the Animation Clips with Unity's legacy animation, check MarkClipAsLegacy before recording.
+
+Please note that Motion Recorder requires the Editor Coroutines package!
