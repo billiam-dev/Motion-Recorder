@@ -7,7 +7,7 @@ using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace JARcraft.UnityEditor.MotionRecorder
+namespace Billiam.UEdit.MotionRecorder
 {
     public class MotionRecorder : MonoBehaviour
     {
@@ -45,27 +45,39 @@ namespace JARcraft.UnityEditor.MotionRecorder
             }
         }
 
-        [Tooltip("Objects you want to record should be in this list")] public Transform[] motionTargets;
-        [Tooltip("How many physics steps there will be between each keyframe (0.02 * steps)")] [Range(2, 10)] public int stepsPerKeyframe = 5;
-        [Tooltip("If the resulting clip should be marked as legacy")] public bool markClipAsLegacy;
+        [Tooltip("Objects you want to record should be in this list (objects must be children of the Motion Recorder)")]
+        public Transform[] motionTargets;
+        
+        [Tooltip("How many physics steps the recorder will wait before creating a keyframe (recordTime >= previousKeyframeTime + (steps * 0.02f))"), Range(2, 10)]
+        public int stepsPerKeyframe = 5;
+        
+        [Tooltip("Marked the created animation as legacy (compatable with the Legacy Animation component)")]
+        public bool markClipAsLegacy;
 
         public AnimationClip animationClip;
-        List<TransformMotionRecording> motionRecordings;
-        public bool isRecording
+
+        public bool IsRecording
         {
             get;
             private set;
         }
-        public float clipDuration;
+
+        public float ClipDuration
+        {
+            get;
+            private set;
+        }
 
         public Action onBeginRecording;
         public Action onEndRecording;
         public Action<float> onRecord;
 
+        List<TransformMotionRecording> motionRecordings;
+
 #if UNITY_EDITOR
         public void StartRecording()
         {
-            if (isRecording)
+            if (IsRecording)
             {
                 Debug.Log("Cannot start a new recording while already recording");
                 return;
@@ -73,15 +85,15 @@ namespace JARcraft.UnityEditor.MotionRecorder
 
             onBeginRecording?.Invoke();
 
-            isRecording = true;
+            IsRecording = true;
 
             EditorCoroutineUtility.StartCoroutine(RecordKeyframes(), this);
-            EditorPhyisicsUtility.StartSimulation(this);
+            EditorPhyisicsUtility.StartSimulation();
         }
 
         public void EndRecording()
         {
-            if (!isRecording)
+            if (!IsRecording)
             {
                 Debug.Log("Cannot end recording, not currently recording");
                 return;
@@ -92,12 +104,12 @@ namespace JARcraft.UnityEditor.MotionRecorder
             EditorPhyisicsUtility.EndSimulation();
 
             animationClip = MakeAnimationClip(motionRecordings);
-            isRecording = false;
+            IsRecording = false;
         }
 
         public void SaveClipAsAsset()
         {
-            if (isRecording)
+            if (IsRecording)
             {
                 Debug.Log("Cannot create new Animation Clip while recording");
                 return;
@@ -145,24 +157,24 @@ namespace JARcraft.UnityEditor.MotionRecorder
             }
 
             float lastKeyframeTime = float.MinValue;
-            clipDuration = 0;
+            ClipDuration = 0;
 
-            while (isRecording)
+            while (IsRecording)
             {
                 float deltaTime = Mathf.Max(Time.realtimeSinceStartup - timestamp, 0.001f);
 
-                if (clipDuration >= lastKeyframeTime + (stepsPerKeyframe * 0.02f))
+                if (ClipDuration >= lastKeyframeTime + (stepsPerKeyframe * 0.02f))
                 {
                     foreach (TransformMotionRecording motionRecording in motionRecordings)
                     {
-                        motionRecording.keyframes.Add(new Keyframe(motionRecording.transform.localPosition, motionRecording.transform.localRotation, clipDuration));
+                        motionRecording.keyframes.Add(new Keyframe(motionRecording.transform.localPosition, motionRecording.transform.localRotation, ClipDuration));
                     }
 
-                    lastKeyframeTime = clipDuration;
+                    lastKeyframeTime = ClipDuration;
                 }
 
-                onRecord?.Invoke(clipDuration);
-                clipDuration += deltaTime;
+                onRecord?.Invoke(ClipDuration);
+                ClipDuration += deltaTime;
 
                 timestamp = Time.realtimeSinceStartup;
                 yield return null;
@@ -250,7 +262,7 @@ namespace JARcraft.UnityEditor.MotionRecorder
         {
             animationClip = null;
             motionRecordings = null;
-            clipDuration = 0;
+            ClipDuration = 0;
         }
 #endif
     }

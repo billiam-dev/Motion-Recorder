@@ -4,8 +4,10 @@ using Unity.EditorCoroutines.Editor;
 #endif
 using UnityEngine;
 
-public class EditorPhyisicsUtility : MonoBehaviour
+public class EditorPhyisicsUtility
 {
+    // TODO: If the simulation is running, immediatly end it before play mode is toggled
+
     struct Transform
     {
         public Vector3 position;
@@ -18,23 +20,23 @@ public class EditorPhyisicsUtility : MonoBehaviour
     static bool isSimulating;
 
 #if UNITY_EDITOR
-    public static void StartSimulation(MonoBehaviour owner)
+    public static void StartSimulation()
     {
         if (isSimulating)
         {
-            Debug.LogWarning("Simulation already running!");
+            Debug.LogWarning("Cannot start a new simulation while one is already running!");
             return;
         }
 
         isSimulating = true;
-        EditorCoroutineUtility.StartCoroutine(Simulate(), owner);
+        EditorCoroutineUtility.StartCoroutineOwnerless(Simulate());
     }
 
     public static void EndSimulation()
     {
         if (!isSimulating)
         {
-            Debug.LogWarning("Simulation is not running");
+            Debug.LogWarning("Cannot end simulation, there is no simulation running");
             return;
         }
 
@@ -43,7 +45,7 @@ public class EditorPhyisicsUtility : MonoBehaviour
 
     static IEnumerator Simulate()
     {
-        SaveSimulationState();
+        SavePhysicsSnapshot();
         Physics.simulationMode = SimulationMode.Script;
         float timestamp = Time.realtimeSinceStartup;
 
@@ -58,10 +60,10 @@ public class EditorPhyisicsUtility : MonoBehaviour
         }
 
         Physics.simulationMode = SimulationMode.FixedUpdate;
-        ResetSimulation();
+        LoadPhysicsSnapshot();
     }
 
-    static void SaveSimulationState()
+    static void SavePhysicsSnapshot()
     {
         physicsObjects = MonoBehaviour.FindObjectsOfType<Rigidbody>();
         transforms = new Transform[physicsObjects.Length];
@@ -74,7 +76,7 @@ public class EditorPhyisicsUtility : MonoBehaviour
         }
     }
 
-    static void ResetSimulation()
+    static void LoadPhysicsSnapshot()
     {
         for (int i = 0; i < physicsObjects.Length; i++)
         {

@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace JARcraft.UnityEditor.MotionRecorder
+namespace Billiam.UEdit.MotionRecorder
 {
     [CustomEditor(typeof(MotionRecorder), true)]
     public class MotionRecorderEditor : Editor
@@ -51,7 +51,7 @@ namespace JARcraft.UnityEditor.MotionRecorder
             GUILayout.Space(10);
             GUILayout.BeginHorizontal();
 
-            if (motionRecorder.isRecording)
+            if (motionRecorder.IsRecording)
             {
                 if (GUI.Button(GUILayoutUtility.GetRect(endRecordingButton, GUI.skin.button), endRecordingButton))
                 {
@@ -66,7 +66,7 @@ namespace JARcraft.UnityEditor.MotionRecorder
                 }
             }
 
-            GUI.enabled = !motionRecorder.isRecording && motionRecorder.animationClip != null;
+            GUI.enabled = !motionRecorder.IsRecording && motionRecorder.animationClip != null;
             if (GUI.Button(GUILayoutUtility.GetRect(saveRecordingButton, GUI.skin.button), saveRecordingButton))
             {
                 motionRecorder.SaveClipAsAsset();
@@ -76,7 +76,7 @@ namespace JARcraft.UnityEditor.MotionRecorder
             GUILayout.EndHorizontal();
 
             // Recording clip GUI
-            if (motionRecorder.isRecording || motionRecorder.animationClip != null)
+            if (motionRecorder.IsRecording || motionRecorder.animationClip != null)
             {
                 EditorGUILayout.Space(10);
                 EditorGUILayout.LabelField("Clip", EditorStyles.boldLabel);
